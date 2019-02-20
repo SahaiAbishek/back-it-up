@@ -14,7 +14,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import com.google.api.services.drive.Drive.Files.List;
 import com.google.api.services.drive.model.File;
 
 public class FileUploadGoogleExample {
@@ -44,7 +43,7 @@ public class FileUploadGoogleExample {
 		return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
 	}
 
-	public void upload() throws Exception {
+	public void upload() throws Exception  {
 		try {
 			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			Credential credential = authorize();
@@ -54,10 +53,9 @@ public class FileUploadGoogleExample {
 
 			String folderId = "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO";
 			File fileMetadata = new File();
-			String fileName = "Mphasis experience letter.pdf";
-			fileMetadata.setName(fileName);
+			fileMetadata.setName("bullsEye.jpg");
 			fileMetadata.setParents(Collections.singletonList(folderId));
-			java.io.File filePath = new java.io.File("C:\\delete\\" + fileName);
+			java.io.File filePath = new java.io.File("c:/pics/bullsEye.jpg");
 			FileContent mediaContent = new FileContent("image/jpeg", filePath);
 			File file = driveService.files().create(fileMetadata, mediaContent).setFields("id,parents").execute();
 			System.out.println("File ID: " + file.getId());
@@ -67,28 +65,10 @@ public class FileUploadGoogleExample {
 		}
 	}
 
-	public int totalFiles(String destination) throws Exception{
-//		logger.debug("Inside totalFiles in  google drive :");
-		try {
-			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-			Credential credential = authorize();
-			Drive driveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Test App").build();
-			File fileMetadata = new File();
-			fileMetadata.setParents(Collections.singletonList(destination));
-			int size = driveService.files().list().setFields(destination).setFields("parent").size();
-			System.out.println("Number of files : " + size);
-			return size;
-		} catch (Exception ex) {
-//			logger.error(ex.getMessage());
-			ex.printStackTrace();
-			throw new Exception(ex.getMessage());
-		}
-	}
-
 	public static void main(String[] args) {
 		FileUploadGoogleExample example = new FileUploadGoogleExample();
 		try {
-			example.totalFiles("1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO");
+			example.upload();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

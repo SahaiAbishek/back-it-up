@@ -67,7 +67,7 @@ public class BackupGoogleService {
 					.setApplicationName("Test App").build();
 
 //			String folderId = "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO";
-			source = source == null ? "/c/delete/":"/"+source+"/";
+			source = source == null ? "c:/delete/":"/"+source+"/";
 			File fileMetadata = new File();
 			fileMetadata.setName(fileName);
 			fileMetadata.setParents(Collections.singletonList(destination));
