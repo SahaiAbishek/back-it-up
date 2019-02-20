@@ -31,7 +31,7 @@ public class BackupFTPService {
 	private String password;
 
 	@Async("asyncExecutor")
-	public Future<Boolean> addFiles(String source, String destination, String fileNAme) throws Exception {
+	public Future<Boolean> addFiles(String source, String destination, String fileName) throws Exception {
 
 		logger.debug("Inside addFiles");
 
@@ -41,9 +41,9 @@ public class BackupFTPService {
 			ftpClient.enterLocalPassiveMode();
 			ftpClient.login(user, password);
 			ftpClient.changeWorkingDirectory(source);
-			InputStream inputStream = ftpClient.retrieveFileStream(fileNAme);
+			InputStream inputStream = ftpClient.retrieveFileStream(fileName);
 			destination = destination == null ? "/c/delete/":"/"+destination+"/";
-			File targetFile = new File(destination + fileNAme);
+			File targetFile = new File(destination + fileName);
 			FileUtils.copyInputStreamToFile(inputStream, targetFile);
 			logger.debug("files copied successfully");
 		} catch (SocketException e) {

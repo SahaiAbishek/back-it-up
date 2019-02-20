@@ -1,5 +1,14 @@
+package com.app.abhi.backup.service;
+
 import java.io.InputStreamReader;
 import java.util.Collections;
+import java.util.concurrent.Future;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -13,11 +22,14 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.Drive.Files.List;
+import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 
-public class FileUploadGoogleExample {
+@Service
+public class BackupGoogleService {
+
+	Logger logger = LoggerFactory.getLogger(BackupFTPService.class);
 
 	private static JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private static HttpTransport httpTransport;
@@ -29,7 +41,7 @@ public class FileUploadGoogleExample {
 		FileDataStoreFactory dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
 		// load client secrets
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-				new InputStreamReader(FileUploadGoogleExample.class.getResourceAsStream("/client_secrets.json")));
+				new InputStreamReader(BackupGoogleService.class.getResourceAsStream("/client_secrets.json")));
 		if (clientSecrets.getDetails().getClientId().startsWith("Enter")
 				|| clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
 			System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=drive "
@@ -44,7 +56,9 @@ public class FileUploadGoogleExample {
 		return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
 	}
 
-	public void upload() throws Exception {
+	@Async("asyncExecutor")
+	public Future<Boolean> addFiles(String source, String destination, String fileName) throws Exception {
+		logger.debug("Inside add files google :");
 		try {
 			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			Credential credential = authorize();
@@ -52,47 +66,38 @@ public class FileUploadGoogleExample {
 			Drive driveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential)
 					.setApplicationName("Test App").build();
 
-			String folderId = "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO";
+//			String folderId = "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO";
+			source = source == null ? "/c/delete/":"/"+source+"/";
 			File fileMetadata = new File();
-			String fileName = "Mphasis experience letter.pdf";
 			fileMetadata.setName(fileName);
-			fileMetadata.setParents(Collections.singletonList(folderId));
-			java.io.File filePath = new java.io.File("C:\\delete\\" + fileName);
+			fileMetadata.setParents(Collections.singletonList(destination));
+			java.io.File filePath = new java.io.File(source+fileName);
 			FileContent mediaContent = new FileContent("image/jpeg", filePath);
 			File file = driveService.files().create(fileMetadata, mediaContent).setFields("id,parents").execute();
-			System.out.println("File ID: " + file.getId());
+			logger.debug("File ID: " + file.getId());
 		} catch (Exception ex) {
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());
 		}
+		logger.debug("Completed Successfully");
+		return new AsyncResult<Boolean>(true);
 	}
-
-	public int totalFiles(String destination) throws Exception{
-//		logger.debug("Inside totalFiles in  google drive :");
+	
+	public long totalFiles(String destination) throws Exception{
+		logger.debug("Inside totalFiles in  google drive :");
 		try {
 			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			Credential credential = authorize();
 			Drive driveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Test App").build();
-			File fileMetadata = new File();
-			fileMetadata.setParents(Collections.singletonList(destination));
-			int size = driveService.files().list().setFields(destination).setFields("parent").size();
-			System.out.println("Number of files : " + size);
-			return size;
+			List files = driveService.files().list();
+			logger.debug("Number of files" + files.size());
+			return files.size();
 		} catch (Exception ex) {
-//			logger.error(ex.getMessage());
+			logger.error(ex.getMessage());
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());
 		}
 	}
-
-	public static void main(String[] args) {
-		FileUploadGoogleExample example = new FileUploadGoogleExample();
-		try {
-			example.totalFiles("1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
+	
 }

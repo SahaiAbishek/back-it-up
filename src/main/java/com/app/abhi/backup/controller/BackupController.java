@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.abhi.backup.service.BackupFTPService;
+import com.app.abhi.backup.service.BackupGoogleService;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -28,6 +29,9 @@ public class BackupController {
 
 	@Autowired
 	BackupFTPService service;
+
+	@Autowired
+	BackupGoogleService googleService;
 
 	@CrossOrigin
 	@GetMapping(path = "/dir/{dirName}", produces = "application/json")
@@ -40,7 +44,8 @@ public class BackupController {
 	@CrossOrigin
 	@PostMapping(path = "/dir/{fromDir}_{toDir}", produces = "application/json")
 	@ApiOperation(value = "Add files from source to destination", nickname = "Add files from source to destination")
-	public ResponseEntity<Boolean> addFiles(@PathVariable String fromDir, @RequestParam(required=false) String toDir) throws Exception {
+	public ResponseEntity<Boolean> addFiles(@PathVariable String fromDir, @RequestParam(required = false) String toDir)
+			throws Exception {
 		logger.debug("Inside addFiles");
 		Future<Boolean> isSuccessful = new AsyncResult<Boolean>(false);
 		for (String fileName : service.viewFiles(fromDir)) {
@@ -67,6 +72,24 @@ public class BackupController {
 	@ApiOperation(value = "Find a file by name", nickname = "Find a file by name")
 	public ResponseEntity<String> findFile(@PathVariable String fileName) throws Exception {
 		logger.debug("Inside delete files");
-		return new ResponseEntity<>("TO delete or not to delete is the question ?", HttpStatus.OK);
+		return new ResponseEntity<>("Still finding ...", HttpStatus.OK);
+	}
+
+	@CrossOrigin
+	@PostMapping(path = "/drive/{fromDir}_{toDir}", produces = "application/json")
+	@ApiOperation(value = "Add files to Google Drive", nickname = "Add files from source to destination")
+	public ResponseEntity<Boolean> addFilesToGoogleDrive(@RequestParam(required = false) String fromDir,
+			@RequestParam(required = false) String toDir) throws Exception {
+		logger.debug("Inside addFilesToGoogleDrive");
+		Future<Boolean> isSuccessful = new AsyncResult<Boolean>(false);
+		for (String fileName : service.viewFiles(fromDir)) {
+			isSuccessful = googleService.addFiles(fromDir, "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO", fileName);
+		}
+		if (isSuccessful.get()) {
+			logger.debug("files added to :" + toDir);
+		} else {
+			logger.error("Files not copied");
+		}
+		return new ResponseEntity<>(isSuccessful.get(), HttpStatus.OK);
 	}
 }

@@ -15,6 +15,7 @@ import com.app.abhi.backup.controller.BackupController;
 import com.app.abhi.backup.dao.BackupRepo;
 import com.app.abhi.backup.entity.FileEntity;
 import com.app.abhi.backup.service.BackupFTPService;
+import com.app.abhi.backup.service.BackupGoogleService;
 import com.app.abhi.backup.service.MailService;
 
 @Component
@@ -37,6 +38,9 @@ public class BackupSchedulingComponent {
 	@Autowired
 	private MailService mailService;
 
+	@Autowired
+	BackupGoogleService googleService;
+
 	@Scheduled(cron = "0 0/1 * * * ?")
 	public void scheduleBackup() {
 		logger.info("Inside scheduleBackup");
@@ -54,8 +58,11 @@ public class BackupSchedulingComponent {
 				List<FileEntity> filesToSave = new ArrayList<>();
 				logger.info("copying " + files.size() + " files.");
 				for (String fileName : files) {
+					// add file to local drive here
 					service.addFiles(sourceDir, destDir, fileName);
-
+					//add files to google drive
+					googleService.addFiles(null, "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO", fileName);
+					// save files in DB
 					FileEntity entity = new FileEntity();
 					entity.setName(fileName);
 					entity.setCopied(true);
