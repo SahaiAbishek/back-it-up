@@ -44,7 +44,8 @@ public class BackupSchedulingComponent {
 	@Autowired
 	BackupGoogleService googleService;
 
-	@Scheduled(cron = "0 0/1 * * * ?")
+	//scheduled for 21 UTC i.e. 4PM EST
+	@Scheduled(cron = "0 0 21 1/1 * ?")
 	public void scheduleBackup() {
 		logger.info("Inside scheduleBackup");
 		try {
