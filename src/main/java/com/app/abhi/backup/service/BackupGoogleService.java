@@ -6,6 +6,7 @@ import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class BackupGoogleService {
 
 	private static JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 	private static HttpTransport httpTransport;
+
+	@Value("${local.folder}")
+	private String localFolder;
 
 	/** Authorizes the installed application to access user's protected data. */
 	private Credential authorize() throws Exception {
@@ -67,11 +71,11 @@ public class BackupGoogleService {
 					.setApplicationName("Test App").build();
 
 //			String folderId = "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO";
-			source = source == null ? "c:/delete/":"/"+source+"/";
+			source = source == null ? localFolder : "/" + source + "/";
 			File fileMetadata = new File();
 			fileMetadata.setName(fileName);
 			fileMetadata.setParents(Collections.singletonList(destination));
-			java.io.File filePath = new java.io.File(source+fileName);
+			java.io.File filePath = new java.io.File(source + fileName);
 			FileContent mediaContent = new FileContent("image/jpeg", filePath);
 			File file = driveService.files().create(fileMetadata, mediaContent).setFields("id,parents").execute();
 			logger.debug("File ID: " + file.getId());
@@ -83,13 +87,14 @@ public class BackupGoogleService {
 		logger.debug("Completed Successfully");
 		return new AsyncResult<Boolean>(true);
 	}
-	
-	public long totalFiles(String destination) throws Exception{
+
+	public long totalFiles(String destination) throws Exception {
 		logger.debug("Inside totalFiles in  google drive :");
 		try {
 			httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			Credential credential = authorize();
-			Drive driveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName("Test App").build();
+			Drive driveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential)
+					.setApplicationName("Test App").build();
 			List files = driveService.files().list();
 			logger.debug("Number of files" + files.size());
 			return files.size();
@@ -99,5 +104,5 @@ public class BackupGoogleService {
 			throw new Exception(ex.getMessage());
 		}
 	}
-	
+
 }

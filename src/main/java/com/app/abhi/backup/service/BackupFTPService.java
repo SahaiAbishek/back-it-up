@@ -29,6 +29,8 @@ public class BackupFTPService {
 	private String user;
 	@Value("${backup.ftp.password}")
 	private String password;
+	@Value("${local.folder}")
+	private String localFolder;
 
 	@Async("asyncExecutor")
 	public Future<Boolean> addFiles(String source, String destination, String fileName) throws Exception {
@@ -42,7 +44,7 @@ public class BackupFTPService {
 			ftpClient.login(user, password);
 			ftpClient.changeWorkingDirectory(source);
 			InputStream inputStream = ftpClient.retrieveFileStream(fileName);
-			destination = destination == null ? "/c/delete/":"/"+destination+"/";
+			destination = destination == null ? localFolder:"/"+destination+"/";
 			File targetFile = new File(destination + fileName);
 			FileUtils.copyInputStreamToFile(inputStream, targetFile);
 			logger.debug("files copied successfully");

@@ -28,7 +28,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableScheduling
 @EnableJpaRepositories("com.app.abhi.backup.dao")
 @EntityScan("com.app.abhi.backup.entity")
-
 @ComponentScan("com.app")
 public class BackupApplicationconfig implements WebMvcConfigurer {
 

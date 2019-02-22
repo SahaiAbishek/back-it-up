@@ -34,6 +34,9 @@ public class BackupSchedulingComponent {
 
 	@Value("${backup.ftp.destDir}")
 	private String destDir;
+	
+	@Value("${google.folder}")
+	private String googleFolder;
 
 	@Autowired
 	private MailService mailService;
@@ -65,7 +68,7 @@ public class BackupSchedulingComponent {
 
 				// add files to google drive
 				for (String fileName : files) {
-					googleService.addFiles(null, "1EMvxLfzgIbN5da73S9_qWFINXVo-kFVO", fileName);
+					googleService.addFiles(null, googleFolder, fileName);
 				}
 
 				// save files in DB
