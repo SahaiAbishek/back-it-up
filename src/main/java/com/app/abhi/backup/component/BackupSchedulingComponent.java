@@ -32,7 +32,7 @@ public class BackupSchedulingComponent {
 	@Value("${backup.ftp.sourceDir}")
 	private String sourceDir;
 
-	@Value("${backup.ftp.destDir}")
+	@Value("${local.folder}")
 	private String destDir;
 	
 	@Value("${google.folder}")
