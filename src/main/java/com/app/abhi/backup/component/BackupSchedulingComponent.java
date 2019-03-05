@@ -45,7 +45,7 @@ public class BackupSchedulingComponent {
 	BackupGoogleService googleService;
 
 	//scheduled for 21 EST 
-	@Scheduled(cron = "0 0 21 * * ?")
+	@Scheduled(cron = "0 0/1 * * * ?")
 	public void scheduleBackup() {
 		logger.info("Inside scheduleBackup");
 		try {
